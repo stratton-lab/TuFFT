@@ -6,14 +6,13 @@
 - **Ex-vivo:** analyze full frames or per-video polygonal ROIs, with foreground filtering and ROI-level CBF summaries.
 - Choose CSV fields and PNG plots, reuse settings, and monitor or cancel batch runs.
 
-## Download And Start
+## Installation
 
 | Goal | Start here |
 | --- | --- |
-| Use the Windows app | [Download the installer](https://github.com/stratton-lab/TuFFT/releases/latest), then follow [installation](docs/INSTALLATION.md#windows-installer). |
-| Learn the desktop workflow | [Illustrated desktop tutorial](docs/USER_MANUAL.md). |
-| Analyze from a terminal | [Python-only installation](docs/INSTALLATION.md#python-cli-only), then [CLI tutorial](docs/CLI_TUTORIAL.md). |
-| Develop the desktop app | [Desktop source installation](docs/INSTALLATION.md#desktop-from-source-windows). |
+| Windows desktop app | [Download the installer](https://github.com/stratton-lab/TuFFT/releases/latest), follow the [installation guide](docs/INSTALLATION.md#windows-installer), then the [desktop tutorial](docs/USER_MANUAL.md). |
+| Python CLI | [CLI installation](docs/INSTALLATION.md#python-cli-only), then the [CLI tutorial](docs/CLI_TUTORIAL.md). |
+| Developer setup | [Desktop source installation](docs/INSTALLATION.md#desktop-from-source-windows). |
 
 The installer includes Python, scientific dependencies, and FFmpeg; no development tools are required. Download the **setup .exe** under release Assets, not GitHub's source-code ZIP. While this repository is private, downloads and cloning require an invited GitHub account; a link alone does not grant access.
 
@@ -29,15 +28,7 @@ Windows 10/11 x64 is supported. macOS desktop packaging and validation are in pr
 
 Supported containers: `.avi`, `.mp4`, `.mov`, `.m4v`, `.mkv`, `.wmv`, `.mpg`, `.mpeg`; the codec must also be supported by FFmpeg. Batch videos share processing settings; ex-vivo custom ROIs may differ per video.
 
-![TuFFT final tuft segmentation preview](docs/images/desktop-tufts.png)
-
-## Practical Limits
-
-Acquisition FPS sets the frequency scale. For N frames, FFT bin spacing is FPS / N: 100 frames at 500 fps gives 5 Hz spacing; 500 frames gives 1 Hz. Setup FFT previews use at most 100 frames; final analysis honors the requested count or **All**.
-
-Final processing uses disk-backed grayscale frames and bounded pixel-wise FFT chunks. Allow sufficient temporary disk space; start with one worker.
-
-Inspect foreground masks before batch analysis. Evidence thresholding can remove valid signal when an ROI contains little background; advanced settings offer an Otsu multiplier or manual evidence cutoff. The metachronal result is an **axis modulo 180 degrees**, not signed flow. Tensor coherence measures phase-gradient organization, not anatomical polarity directly.
+Follow the [illustrated desktop tutorial](docs/USER_MANUAL.md) for step-by-step setup. Its [practical guidance](docs/USER_MANUAL.md#practical-guidance) explains frame selection, memory and storage requirements, foreground-mask checks, and interpretation of metachronal axes.
 
 ## Source And Development
 

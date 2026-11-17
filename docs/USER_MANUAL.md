@@ -170,3 +170,37 @@ Choose **Ex-vivo** for ROI-level analysis without tuft segmentation. Default FPS
 Saving writes reusable JSON immediately to **`<selected output folder>/rois/`**, never beside source videos. **Import ROI folder** matches records by source-video path; assign unmatched videos manually. Moving a video may prevent matching. Full-frame analysis needs only imported parameters, not an ROI folder.
 
 The display loops the first 90 frames at **30 fps**, independent of acquisition FPS. Computation uses acquisition FPS and the requested frame count. Ex-vivo summarizes retained ROI foreground, without per-tuft tables or splitting.
+
+## Practical Guidance
+
+These considerations apply to both desktop and CLI analysis, in either mode.
+
+### Frame Count And Frequency Sampling
+
+Enter the **acquisition FPS**, not the rate at which a player displays the video. Each pixel contributes one intensity sample per frame. For `N` analyzed frames, FFT bin spacing is `FPS / N` Hz. At 500 fps, 100 frames gives 5 Hz spacing, whereas 500 frames gives 1 Hz spacing. Use at least as many frames as the acquisition FPS when 1 Hz or finer bin spacing is needed.
+
+Bin spacing describes the frequency grid, not guaranteed measurement accuracy or the ability to separate nearby biological frequencies. Noise, signal stability, recording duration, and temporal windowing also affect the spectrum. A binned dominant peak is selected from that grid; averaging pixel-level peak frequencies does not add temporal samples.
+
+Scientific setup previews process at most the first **100 frames** for responsiveness. Final analysis uses the requested frame count, or every available frame in each video when **All** is selected. A longer final analysis can therefore yield different spectra, masks, and measurements from its short preview. Inspect final outputs as well as setup previews.
+
+### Memory, Temporary Storage, And Workers
+
+Final processing decodes grayscale frames to disk-backed storage and computes temporal FFTs in bounded pixel chunks. Each pixel's full analyzed time series is transformed independently: chunking does not spatially bin pixels or shorten their FFTs. It limits concurrent FFT workspace rather than eliminating all memory use.
+
+Allow sufficient free temporary-disk space for decoded frames, which can be much larger than the compressed video. More frames and larger images increase storage and processing requirements. Selecting **All** on a long video can require substantial resources even though the entire decoded stack is not held in RAM.
+
+Start with **one worker**. Additional workers process separate videos concurrently, each with its own memory and temporary-storage requirements. The advanced FFT pixel-chunk setting trades workspace memory against processing overhead; reduce it if memory is constrained, and benchmark representative videos before increasing it or the worker count.
+
+### Foreground Thresholds And Mask Checks
+
+Inspect the raw and masked frequency, phase, and video views before applying one configuration to a batch. CBF bandpass and background/noise removal are combined in the band preview: additional pixels can be excluded even when the selected frequency interval spans the entire spectrum.
+
+Otsu selects a threshold from the ROI's evidence-value distribution; it does not identify biological foreground from ground truth. It can remove valid tuft pixels when foreground and background evidence overlap, especially when the ROI contains little background. There is no guaranteed foreground-coverage percentage at which it succeeds or fails.
+
+In **Advanced settings**, inspect the Gaussian evidence heatmap. If the mask removes valid signal, consider lowering the Otsu coefficient or choosing a manual evidence cutoff on the **0-1** scale. Reapply the preview and check both retained tufts and background. Save the evidence PNG when reviewing threshold choices across videos.
+
+### Metachronal Axes And Coherence
+
+The tensor result is an **axis modulo 180 degrees**, not a signed flow direction. Angles of 0 and 180 degrees represent the same alignment. Interpret video-level angles with axial circular statistics rather than ordinary arithmetic angle averages; local planar-axis alignment also accounts for this equivalence.
+
+Tensor coherence describes how consistently phase gradients are oriented within a tuft. It is not a direct anatomical measurement of ciliary rotational polarity and does not establish directional polarity. Interpret it alongside the phase map, segmentation quality, and retained signal.
