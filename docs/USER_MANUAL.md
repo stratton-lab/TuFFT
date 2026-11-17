@@ -28,16 +28,16 @@ Wait for the video preview to finish decoding before clicking **Next setting**.
 
 ## 4. Select The ROI
 
-Choose a centered circle (default radius **440 pixels**), centered square, or full frame. Make sure the ROI fits your video. Excluded pixels are shaded. This tutorial retains the default circle.
+Choose a centred circle (default radius **440 pixels**), centred square, or full frame. Make sure the ROI fits your video. Excluded pixels are shaded. This tutorial retains the default circle.
 
-![Centered circular ROI selection](images/desktop-roi.png)
+![Centred circular ROI selection](images/desktop-roi.png)
 
 <details>
 <summary>Compare the other ROI shapes</summary>
 
-The square uses an adjustable width. Full frame includes every pixel. Switch back to **Centered circle** to follow this example without changing its parameters.
+The square uses an adjustable width. Full frame includes every pixel. Switch back to the centred circle to follow this example without changing its parameters.
 
-![Centered square ROI](images/desktop-roi-square.png)
+![Centred square ROI](images/desktop-roi-square.png)
 
 ![Full-frame ROI](images/desktop-roi-full.png)
 
@@ -89,9 +89,9 @@ Click **Next setting**. Keep minimum tuft area **150 px²** and maximum size bef
 
 </details>
 
-Switch to the **Tufts** view. Different colors identify separate labels; they do not represent CBF.
+Switch to the **Tufts** view. Different colours identify separate labels; they do not represent CBF.
 
-![Segmented tufts shown in distinct colors](images/desktop-tufts.png)
+![Segmented tufts shown in distinct colours](images/desktop-tufts.png)
 
 Inspect lost or merged tufts. The 800-pixel value triggers attempted splitting, not a guaranteed final upper bound: regions can remain larger if no acceptable watershed split is found.
 
@@ -131,7 +131,7 @@ Choose only the measurements you want saved. The local planar-axis alignment con
 
 </details>
 
-Choose PNGs, colormap, DPI (default **600**), and display range. Color limits initially follow the CBF band; band edits reset them, so apply custom plot limits after final band selection. Display limits do not alter measurements.
+Choose PNGs, colourmap, DPI (default **600**), and display range. Colour limits initially follow the CBF band; band edits reset them, so apply custom plot limits after final band selection. Display limits do not alter measurements.
 
 Select **Gaussian evidence heatmap** to save the diagnostic map shown below. It is optional and must be checked explicitly for this example. All analysis parameters remain at their defaults.
 
@@ -151,9 +151,9 @@ At completion, choose **Open output directory**. Every unique job folder contain
 
 ![Completed analysis and the Open output directory action](images/desktop-completed.png)
 
-The Gaussian evidence PNG below is an actual saved output from this example run, not a screenshot of the preview. Its colorbar shows the normalized evidence used for background thresholding. It is not a CBF or phase map.
+The Gaussian evidence PNG below is an actual saved output from this example run, not a screenshot of the preview. Its colourbar shows the normalized evidence used for background thresholding. It is not a CBF or phase map.
 
-![Saved Gaussian evidence heatmap with its labeled evidence colorbar](images/desktop-evidence-result.png)
+![Saved Gaussian evidence heatmap with its labelled evidence colourbar](images/desktop-evidence-result.png)
 
 **Reset setup** clears the previous job. **Import parameters.json** reuses settings and output choices on newly selected videos. The file must match the chosen analysis mode.
 
@@ -185,7 +185,7 @@ Scientific setup previews process at most the first **100 frames** for responsiv
 
 ### Memory, Temporary Storage, And Workers
 
-Final processing decodes grayscale frames to disk-backed storage and computes temporal FFTs in bounded pixel chunks. Each pixel's full analyzed time series is transformed independently: chunking does not spatially bin pixels or shorten their FFTs. It limits concurrent FFT workspace rather than eliminating all memory use.
+Final processing decodes greyscale frames to disk-backed storage and computes temporal FFTs in bounded pixel chunks. Each pixel's full analyzed time series is transformed independently: chunking does not spatially bin pixels or shorten their FFTs. It limits concurrent FFT workspace rather than eliminating all memory use.
 
 Allow sufficient free temporary-disk space for decoded frames, which can be much larger than the compressed video. More frames and larger images increase storage and processing requirements. Selecting **All** on a long video can require substantial resources even though the entire decoded stack is not held in RAM.
 

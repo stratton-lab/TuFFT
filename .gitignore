@@ -82,6 +82,7 @@ src-tauri/gen/
 # Application-owned visual assets must remain reproducible.
 !docs/images/
 !docs/images/desktop-*.png
+!docs/images/tufft-wordmark*.png
 !src-tauri/icons/
 !src-tauri/icons/**
 src-tauri/icons/android/

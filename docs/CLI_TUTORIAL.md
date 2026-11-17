@@ -13,7 +13,7 @@ notepad .\job.json
 
 Set `input_videos` to existing files and `output_root` to a writable folder. Windows paths can use forward slashes, e.g. `"D:/videos/sample.avi"`. Relative paths resolve from **the JSON file's folder**, not the current terminal directory.
 
-The example uses 500 fps, 100 frames, a centered circle of radius 440 pixels, a 5-60 Hz band, and both CSVs. Use a smaller radius or `"ROI_MODE": "full"` if needed. Confirm FPS from acquisition information.
+The example uses 500 fps, 100 frames, a centred circle of radius 440 pixels, a 5-60 Hz band, and both CSVs. Use a smaller radius or `"ROI_MODE": "full"` if needed. Confirm FPS from acquisition information.
 
 For ex-vivo, copy `examples/ex-vivo.json` instead: it uses 2000 fps, full-frame ROI, and no tuft segmentation. A desktop run's `parameters.json` is also a complete CLI configuration; edit input/output paths and assign a new `job_id` before reusing it.
 

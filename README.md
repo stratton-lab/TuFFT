@@ -1,6 +1,22 @@
-# TuFFT
+<h1 align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/tufft-wordmark-dark.png">
+    <img src="docs/images/tufft-wordmark.png" alt="TuFFT" width="280">
+  </picture>
+</h1>
 
-**TuFFT** analyzes high-speed microscopy videos of motile cilia through a guided Windows desktop application and a Python CLI using the same analysis engine.
+<p align="center">
+  <strong>High-speed cilia video analysis</strong><br>
+  Measure beating frequency, identify tufts, and explore metachronal axes.
+</p>
+
+<p align="center">
+  <strong><a href="docs/USER_MANUAL.md">Start the desktop tutorial</a></strong>
+  &nbsp;|&nbsp; <a href="https://github.com/stratton-lab/TuFFT/releases/latest">Download for Windows</a>
+  &nbsp;|&nbsp; <a href="docs/CLI_TUTORIAL.md">CLI tutorial</a>
+</p>
+
+**TuFFT** combines a guided Windows desktop application and a Python CLI using the same analysis engine.
 
 - **In-vitro:** segment ciliated tufts and measure area, ciliary beat frequency (CBF), metachronal axis, and phase-tensor coherence.
 - **Ex-vivo:** analyze full frames or per-video polygonal ROIs, with foreground filtering and ROI-level CBF summaries.
@@ -17,6 +33,12 @@
 The installer includes Python, scientific dependencies, and FFmpeg; no development tools are required. Download the **setup .exe** under release Assets, not GitHub's source-code ZIP. While this repository is private, downloads and cloning require an invited GitHub account; a link alone does not grant access.
 
 Windows 10/11 x64 is supported. macOS desktop packaging and validation are in progress; no supported macOS installer is available yet.
+
+## Analysis At A Glance
+
+[![Six-panel analysis overview: original video frame, raw FFT CBF, Gaussian evidence, final tuft mask, individual tufts, and phase with metachronal axes](docs/images/desktop-analysis-overview.png)](docs/USER_MANUAL.md)
+
+An in-vitro example using **100 frames at 500 fps** and a circular ROI. Follow the [illustrated tutorial](docs/USER_MANUAL.md) to explore each stage and its settings.
 
 ## Quick Workflow
 
@@ -44,4 +66,4 @@ docs/                Installation, tutorials, and integration reference
 
 See [development and releases](docs/RELEASE_AND_GITHUB.md), the [job configuration reference](docs/contracts/job-config-v1.md), and [progress events](docs/contracts/events-v1.md).
 
-This repository contains application source, tests, and user documentation. Installers are release assets, not Git files. Raw videos, experimental validation, generated results, and manuscript materials are not included.
+This repository contains application source, tests, and user documentation. Installers are release assets, not Git files. Raw videos, experimental validation datasets, complete analysis runs, and manuscript materials are not included.
