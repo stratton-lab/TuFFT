@@ -16,7 +16,9 @@
   &nbsp;|&nbsp; <a href="docs/CLI_TUTORIAL.md">CLI tutorial</a>
 </p>
 
-**TuFFT** combines a guided Windows desktop application and a Python CLI using the same analysis engine.
+**TuFFT** was developed for high-speed videos of **ependymal cell cilia**. It can also be applied to other ciliated cell types, with analysis settings tuned and results validated for the preparation. See the [analysis workflow and methodology](docs/USER_MANUAL.md) and [guidance for other cell types](docs/USER_MANUAL.md#adapting-to-other-cell-types).
+
+The guided Windows desktop application and Python CLI share the same analysis engine, including multi-worker batch processing.
 
 - **In-vitro:** segment ciliated tufts and measure area, ciliary beat frequency (CBF), metachronal axis, and phase-tensor coherence.
 - **Ex-vivo:** analyze full frames or per-video polygonal ROIs, with foreground filtering and ROI-level CBF summaries.

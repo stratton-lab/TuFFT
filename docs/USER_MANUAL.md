@@ -175,6 +175,14 @@ The display loops the first 90 frames at **30 fps**, independent of acquisition 
 
 These considerations apply to both desktop and CLI analysis, in either mode.
 
+### Adapting To Other Cell Types
+
+TuFFT was developed for videos of ependymal cell cilia. Other ciliated cell types can be analyzed using the same engine, but the default settings should not be assumed suitable without inspection and validation.
+
+Confirm acquisition FPS, frame count, and ROI first. Tune the CBF band and Gaussian evidence/background thresholds to the recorded signal. For in-vitro tuft analysis, also check minimum tuft area, the size threshold for splitting, and advanced spatial filtering and segmentation settings against the structures visible in the video. Ex-vivo analysis provides ROI-level measurements without tuft segmentation.
+
+Compare the original video, frequency and phase maps, evidence heatmap, and final masks across representative examples. Check measurements against suitable reference data for the new preparation before applying one configuration to a larger batch. The steps above and the [configuration reference](contracts/job-config-v1.md) describe the workflow and its adjustable parameters.
+
 ### Frame Count And Frequency Sampling
 
 Enter the **acquisition FPS**, not the rate at which a player displays the video. Each pixel contributes one intensity sample per frame. For `N` analyzed frames, FFT bin spacing is `FPS / N` Hz. At 500 fps, 100 frames gives 5 Hz spacing, whereas 500 frames gives 1 Hz spacing. Use at least as many frames as the acquisition FPS when 1 Hz or finer bin spacing is needed.

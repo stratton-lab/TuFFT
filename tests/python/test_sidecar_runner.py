@@ -14,7 +14,7 @@ sys.path.insert(0, str(SIDECAR_DIRECTORY))
 
 from cilia_sidecar.config import JobConfig
 from cilia_sidecar.events import EventEmitter
-from cilia_sidecar.runner import _unique_video_tags, run_job
+from cilia_sidecar.runner import _effective_worker_count, _unique_video_tags, run_job
 
 
 def fake_process_one_video(video_path, output_path, params, progress_callback=None, **kwargs):
@@ -36,6 +36,22 @@ def fake_process_one_video(video_path, output_path, params, progress_callback=No
 
 
 class SidecarRunnerTests(unittest.TestCase):
+    def test_worker_count_respects_request_video_count_and_cpu_count(self) -> None:
+        for requested, videos, cpus, expected in [
+            (4, 8, 8, 4),
+            (8, 3, 16, 3),
+            (8, 10, 2, 2),
+            (4, 1, 8, 1),
+            (4, 8, None, 1),
+        ]:
+            with self.subTest(requested=requested, videos=videos, cpus=cpus):
+                with patch("cilia_sidecar.runner.os.cpu_count", return_value=cpus):
+                    self.assertEqual(_effective_worker_count(requested, videos, True), expected)
+
+    def test_stop_on_first_error_uses_one_worker(self) -> None:
+        with patch("cilia_sidecar.runner.os.cpu_count", return_value=8):
+            self.assertEqual(_effective_worker_count(4, 8, False), 1)
+
     def test_writes_manifest_parameters_artifacts_and_events(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             root = Path(temporary_directory)

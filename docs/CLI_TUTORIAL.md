@@ -35,6 +35,29 @@ $LASTEXITCODE
 
 In activated Conda, replace the executable path with `tufft-sidecar`. The installer is for desktop use; a Python source installation provides this terminal entry point.
 
+### Set The Number Of Workers
+
+The CLI supports the **same multi-worker batch processing as the desktop app**. Set the top-level `max_workers` field in your job JSON, outside `pipeline_params`. For example, this requests up to four videos running concurrently:
+
+```json
+"max_workers": 4
+```
+
+To update an existing job file from PowerShell and start a new batch:
+
+```powershell
+$job = Get-Content .\job.json -Raw | ConvertFrom-Json
+$job.max_workers = 4
+$job.job_id = 'my-parallel-batch-001'
+$job | ConvertTo-Json -Depth 30 | Set-Content .\job.json -Encoding UTF8
+.\.venv\Scripts\tufft-sidecar.exe --config .\job.json --validate-only
+.\.venv\Scripts\tufft-sidecar.exe --config .\job.json
+```
+
+Use a new `job_id` for each run. The effective worker count is limited by the number of input videos and logical CPUs. Workers process separate videos, not separate parts of one video's FFT, so selecting four workers for one video still uses one worker. With `continue_after_error: false`, processing is sequential to honour stop-on-first-error behaviour.
+
+The default is **1**. Increase it only when RAM and temporary-disk capacity permit: each worker owns its decoded frame store and FFT workspace. The effective count is recorded as `max_workers` in `manifest.json`.
+
 ## 3. Inspect Results
 
 Open `<output_root>/<job_id>/`:
