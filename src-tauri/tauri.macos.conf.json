@@ -1,0 +1,12 @@
+{
+  "bundle": {
+    "active": true,
+    "targets": ["app", "dmg"],
+    "externalBin": ["binaries/tufft-sidecar"],
+    "macOS": {
+      "files": {
+        "Frameworks": "binaries/tufft-sidecar/_internal/"
+      }
+    }
+  }
+}

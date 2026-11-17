@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tufft-sidecar"
+version = "0.1.1"
+description = "Python analysis sidecar for TuFFT."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "numpy",
+  "scipy",
+  "scikit-image",
+  "imageio",
+  "imageio-ffmpeg",
+  "Pillow",
+]
+
+[project.optional-dependencies]
+build = ["pyinstaller"]
+
+[project.scripts]
+tufft-sidecar = "cilia_sidecar.cli:main"
+
+[project.urls]
+Repository = "https://github.com/stratton-lab/TuFFT"
+Documentation = "https://github.com/stratton-lab/TuFFT/tree/main/docs"
+
+[tool.setuptools.packages.find]
+where = ["python/sidecar"]
+include = ["cilia_sidecar*"]

@@ -1,0 +1,28 @@
+[package]
+name = "tufft-desktop"
+version = "0.1.1"
+description = "Desktop host for TuFFT cilia video analysis"
+authors = ["TuFFT contributors"]
+edition = "2021"
+
+[lib]
+name = "tufft_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tokio = { version = "1", features = ["io-util", "macros", "process", "sync"] }
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.61", features = [
+    "Win32_Foundation",
+    "Win32_System_LibraryLoader",
+    "Win32_UI_HiDpi",
+    "Win32_UI_WindowsAndMessaging",
+] }

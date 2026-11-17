@@ -1,0 +1,33 @@
+{
+  "name": "tufft-desktop",
+  "private": true,
+  "version": "0.1.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "test:frontend": "node --experimental-strip-types --test tests/frontend/*.test.ts",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "build:sidecar": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/build_sidecar.ps1",
+    "build:release": "pnpm.cmd build:sidecar && tauri build --config src-tauri/tauri.release.conf.json",
+    "build:release:mac": "bash tools/build_sidecar_macos.sh && tauri build --config src-tauri/tauri.macos.conf.json",
+    "check:python": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/check_python.ps1"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "2.11.1",
+    "@tauri-apps/plugin-dialog": "2.7.1",
+    "lucide-react": "1.24.0",
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.11.4",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.0.3",
+    "typescript": "7.0.2",
+    "vite": "8.1.4"
+  },
+  "packageManager": "pnpm@11.13.0"
+}

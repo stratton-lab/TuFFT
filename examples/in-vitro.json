@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "job_id": "in-vitro-001",
+  "analysis_type": "in_vitro",
+  "input_videos": ["input/sample.avi"],
+  "output_root": "results",
+  "pipeline_params": {
+    "FPS": 500,
+    "N_FRAMES": 100,
+    "ROI_MODE": "circle",
+    "RADIUS": 440,
+    "BAND_LO": 5,
+    "BAND_HI": 60,
+    "SAVE_BATCH_SUMMARY": true,
+    "SAVE_TUFT_TABLE": true
+  },
+  "summary_columns": [
+    "tuft_count", "tuft_area_mean_px", "tuft_area_std_px",
+    "pixel_mean_cbf_mean_hz", "pixel_mean_cbf_std_hz",
+    "joint_peak_cbf_mean_hz", "joint_peak_cbf_std_hz",
+    "tensor_axis_circular_mean_deg", "tensor_axis_circular_std_deg",
+    "tensor_coherence_mean", "tensor_coherence_std"
+  ],
+  "tuft_columns": [
+    "centroid_x", "centroid_y", "area_px", "joint_spectral_cbf_hz",
+    "pixel_dominant_cbf_mean_hz", "pixel_dominant_cbf_std_hz",
+    "phase_tensor_axis_deg", "phase_tensor_coherence"
+  ],
+  "continue_after_error": true,
+  "max_workers": 1
+}

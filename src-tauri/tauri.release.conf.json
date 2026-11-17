@@ -1,0 +1,10 @@
+{
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "externalBin": ["binaries/tufft-sidecar"],
+    "resources": {
+      "binaries/tufft-sidecar/_internal/": "_internal/"
+    }
+  }
+}

@@ -1,0 +1,177 @@
+# Python caches and local environments
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+*.egg-info/
+.venv/
+venv/
+env/
+ENV/
+
+# Conda and environment-local files
+.conda/
+conda-meta/
+
+# Node, Vite, React, and pnpm
+node_modules/
+dist/
+dist-ssr/
+build/
+.vite/
+.turbo/
+.pnpm-store/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Tauri and Rust build outputs
+target/
+src-tauri/target/
+src-tauri/gen/
+
+# Packaged Python sidecar outputs
+/src-tauri/binaries/
+*.spec
+*.manifest
+*.pyz
+*.pyd
+*.so
+*.dll
+*.exe
+*.msi
+*.appx
+*.msix
+*.deb
+*.rpm
+*.dmg
+*.pkg
+
+# Raw input video, image, and microscopy data
+*.avi
+*.mp4
+*.mov
+*.m4v
+*.mkv
+*.wmv
+*.mpg
+*.mpeg
+*.tif
+*.tiff
+*.ome.tif
+*.ome.tiff
+*.nd2
+*.czi
+*.lif
+
+# Generated plots, previews, masks, and analysis images
+*.png
+*.jpg
+*.jpeg
+*.bmp
+*.gif
+*.webp
+*.svg
+
+# Application-owned visual assets must remain reproducible.
+!docs/images/
+!docs/images/desktop-roi.png
+!docs/images/desktop-band.png
+!docs/images/desktop-tufts.png
+!docs/images/desktop-outputs.png
+!src-tauri/icons/
+!src-tauri/icons/**
+src-tauri/icons/android/
+src-tauri/icons/ios/
+
+# Generated analysis tables, manifests, logs, and archives
+*.csv
+*.tsv
+*.xlsx
+*.xls
+*.jsonl
+*.log
+*.out
+*.err
+*.zip
+*.7z
+*.tar
+*.tar.gz
+
+# Common analysis output directories
+outputs/
+output/
+results/
+result/
+initial outputs/
+manual_comparison_plots/
+temp/
+tmp/
+logs/
+previews/
+artifacts/
+roi_masks/
+
+# Local non-release analysis material
+in_silico_cilia_validation/
+simulated video generation/
+validation_sandbox/
+segmentation_research/
+archives/
+scratch/
+python/sidecar/scratch/
+
+# Non-release notes and local-only source trees
+python scripts/
+python/sidecar/cilia_sidecar/legacy_pipeline.py
+tests/python/test_tuft_spectral_summary.py
+codex prompt.md
+iterative feedback on issues with code.txt
+my vision for the desktop program.txt
+DEVELOPMENT_LOG.md
+docs/ANALYSIS_METHODS.md
+docs/PAPER_METHODS_DRAFT.md
+docs/*CITATION*
+
+# Generated data inside ignored local trees
+segmentation_research/cache/
+segmentation_research/outputs/
+segmentation_research/round_02_multiscale/cache/
+segmentation_research/round_02_multiscale/outputs/
+segmentation_research/round_03_pixel_phase/cache/
+segmentation_research/round_03_pixel_phase/outputs/
+segmentation_research/round_04_gaussian_tuning/outputs/
+segmentation_research/round_05_blob_filtering/outputs/
+segmentation_research/round_06_tuft_core_repair/outputs/
+segmentation_research/round_07_tuft_segmentation/outputs/
+segmentation_research/round_08_tuft_metrics_phase/outputs/
+segmentation_research/round_09_final_workflow_outputs/outputs/
+
+# Keep source-controlled configuration examples explicit.
+!environment.yml
+!package.json
+!pnpm-lock.yaml
+!tsconfig*.json
+!vite.config.*
+!src-tauri/tauri.conf.json
+
+# Local editor and OS noise
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local notes and temporary scratch files
+/job.json
+/progress.ndjson
+*.tmp
+*.bak
+*.swp
+~$*

@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "job_id": "ex-vivo-001",
+  "analysis_type": "ex_vivo",
+  "input_videos": ["input/sample.avi"],
+  "output_root": "results",
+  "pipeline_params": {
+    "FPS": 2000,
+    "N_FRAMES": 100,
+    "ROI_MODE": "full",
+    "BAND_LO": 5,
+    "BAND_HI": 60,
+    "SAVE_BATCH_SUMMARY": true
+  },
+  "summary_columns": [
+    "roi_area_px", "foreground_area_px", "joint_dominant_cbf_hz",
+    "joint_peak_fwhm_hz", "pixel_dominant_cbf_mean_hz",
+    "pixel_dominant_cbf_std_hz"
+  ],
+  "continue_after_error": true,
+  "max_workers": 1
+}
