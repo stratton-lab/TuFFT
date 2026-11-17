@@ -81,10 +81,7 @@ src-tauri/gen/
 
 # Application-owned visual assets must remain reproducible.
 !docs/images/
-!docs/images/desktop-roi.png
-!docs/images/desktop-band.png
-!docs/images/desktop-tufts.png
-!docs/images/desktop-outputs.png
+!docs/images/desktop-*.png
 !src-tauri/icons/
 !src-tauri/icons/**
 src-tauri/icons/android/

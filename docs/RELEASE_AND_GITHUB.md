@@ -4,7 +4,7 @@ TuFFT uses React/TypeScript for workflow and previews, a Rust/Tauri host for nat
 
 ## Repository Scope
 
-Track application source, tests, build definitions, user guides, protocol references, and the four curated tutorial screenshots in `docs/images/`. Do not commit raw videos, generated analysis results, validation experiments, manuscript materials, local notes, packaged runtimes, or installers. See `.gitignore`.
+Track application source, tests, build definitions, user guides, protocol references, and curated tutorial images in `docs/images/`. The tutorial's Gaussian evidence PNG illustrates a saved output; other generated analysis results remain excluded. Do not commit raw videos, validation experiments, manuscript materials, local notes, packaged runtimes, or installers. See `.gitignore`.
 
 Python package metadata is in `pyproject.toml`; JavaScript and Rust dependencies use `pnpm-lock.yaml` and `src-tauri/Cargo.lock`. The Conda environment is defined in `environment.yml`.
 
