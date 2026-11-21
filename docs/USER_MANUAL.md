@@ -145,6 +145,8 @@ Continue to **Review and run**, confirm settings, then **Run analysis**. Start w
 
 Monitor stages, progress, elapsed time, ETA, and warnings. **Stop analysis** cancels; completed outputs remain and incomplete outputs are recorded. Inspect the manifest and per-video statuses for failures.
 
+TuFFT reuses matching calculations from the representative video's setup preview when the source video, ROI, FPS, frame count, and relevant processing parameters agree. Only unfinished calculations and the currently selected output files are generated. A preview of 100 frames does not replace a final analysis requesting more frames or **All**; that analysis processes the full requested sequence.
+
 ![Analysis running with current-video stages and batch progress](images/desktop-running.png)
 
 At completion, choose **Open output directory**. Every unique job folder contains `parameters.json`, `manifest.json`, logs, selected batch tables, and per-video CSVs/PNGs. Keep parameters and manifest with exported results.
@@ -198,6 +200,14 @@ Final processing decodes greyscale frames to disk-backed storage and computes te
 Allow sufficient free temporary-disk space for decoded frames, which can be much larger than the compressed video. More frames and larger images increase storage and processing requirements. Selecting **All** on a long video can require substantial resources even though the entire decoded stack is not held in RAM.
 
 Start with **one worker**. Additional workers process separate videos concurrently, each with its own memory and temporary-storage requirements. The advanced FFT pixel-chunk setting trades workspace memory against processing overhead; reduce it if memory is constrained, and benchmark representative videos before increasing it or the worker count.
+
+### Reusing Setup Previews
+
+Scientific preview checkpoints are stored in the application's local cache folder, not kept in a background Python process or loaded into browser memory. Saved frames are memory-mapped when needed; the processing child exits after each preview. Normal computation and image rendering still require working memory while they run.
+
+The cache targets a maximum of **512 MiB** on disk across **two recent video/FFT configurations**. Oversized checkpoints are not saved. Entries expire after **24 hours** and are removed during subsequent cache writes; files currently in use may be retained until a later cleanup. This cache is disposable and is not a substitute for saved run outputs.
+
+Changing the video, ROI, FPS, frame count, or FFT settings requires a new FFT. Filtering and segmentation changes invalidate their downstream results while allowing the original FFT to be reused. Output selections, DPI, and colour settings are applied at export time. Missing, expired, or unreadable checkpoints fall back to normal processing, and unavailable cache storage does not prevent analysis.
 
 ### Foreground Thresholds And Mask Checks
 

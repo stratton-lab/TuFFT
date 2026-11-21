@@ -8,7 +8,7 @@ use tokio::{
     sync::oneshot,
 };
 
-use crate::runtime::analysis_sidecar_launch;
+use crate::runtime::{analysis_sidecar_launch, preview_cache_directory};
 
 #[derive(Default)]
 pub struct ManagedJobs(Mutex<HashMap<String, oneshot::Sender<()>>>);
@@ -64,6 +64,7 @@ pub async fn start_analysis(
     }
     configure_child_command(&mut command);
     let mut child = command
+        .env("TUFFT_PREVIEW_CACHE_DIR", preview_cache_directory(&app)?)
         .arg("--config")
         .arg(&config_path)
         .stdin(Stdio::null())

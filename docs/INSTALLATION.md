@@ -8,7 +8,7 @@ Requires Windows 10/11 x64, a writable output folder, and sufficient free disk s
 
 1. Sign in to GitHub with an account granted access to this private repository.
 2. Open [TuFFT Releases](https://github.com/stratton-lab/TuFFT/releases/latest).
-3. Under **Assets**, download `TuFFT_0.1.1_x64-setup.exe`, not **Source code**.
+3. Under **Assets**, download `TuFFT_0.1.2_x64-setup.exe`, not **Source code**.
 4. Run the installer and launch **TuFFT** from the Start menu.
 5. Follow the [desktop tutorial](USER_MANUAL.md).
 
@@ -17,7 +17,7 @@ No Python, Conda, Node.js, Rust, or separate FFmpeg installation is required. Sh
 The installer is unsigned. If Windows or institutional Application Control blocks it, ask IT to approve it; do not disable security controls. Compare the downloaded file's checksum against the release's `SHA256SUMS.txt`:
 
 ```powershell
-Get-FileHash .\TuFFT_0.1.1_x64-setup.exe -Algorithm SHA256
+Get-FileHash .\TuFFT_0.1.2_x64-setup.exe -Algorithm SHA256
 ```
 
 ## Python CLI Only

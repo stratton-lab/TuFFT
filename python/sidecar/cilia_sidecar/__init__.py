@@ -3,4 +3,4 @@
 from .config import JobConfig, JobConfigError
 
 __all__ = ["JobConfig", "JobConfigError"]
-__version__ = "0.1.1"
+__version__ = "0.1.2"

@@ -36,7 +36,7 @@ PyInstaller builds a one-directory scientific sidecar; Tauri bundles the fronten
 Installer location:
 
 ```text
-src-tauri/target/release/bundle/nsis/TuFFT_0.1.1_x64-setup.exe
+src-tauri/target/release/bundle/nsis/TuFFT_0.1.2_x64-setup.exe
 ```
 
 Test the installer on a Windows account without development dependencies. Distribute the setup file, not the application executable alone. The release is unsigned; code signing requires a certificate and packaging integration.
@@ -45,7 +45,7 @@ Test the installer on a Windows account without development dependencies. Distri
 
 Host installers under **Releases**, not in the Git tree. GitHub blocks normal Git files larger than 100 MiB; release assets must each be under 2 GiB. See GitHub's [large-file guidance](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github) and [release limits](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases).
 
-1. Create a version tag and release, for example `v0.1.1`, from a verified commit.
+1. Create a version tag and release, for example `v0.1.2`, from a verified commit.
 2. Attach the setup executable and `SHA256SUMS.txt` containing its SHA-256 hash and filename.
 3. State supported platforms and signing status.
 4. Verify the [latest release link](https://github.com/stratton-lab/TuFFT/releases/latest) and asset download.

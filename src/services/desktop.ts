@@ -115,6 +115,7 @@ export async function loadFftPreview(
         PREVIEW_ANALYSIS_MODE: analysisMode,
         PREVIEW_TUFTS: includeTufts,
         PREVIEW_PHASE: includePhase,
+        PREVIEW_FILTER: previewStage === "filter",
         FFT_CHUNK_PIXELS: settings.fftChunkPixels,
       },
     },

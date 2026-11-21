@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { defaultDraft, parseSettingsFile, toJobConfig } from "../../src/types/job.ts";
+import { analysisPreviewSignature, defaultDraft, parseSettingsFile, previewSignature, toJobConfig } from "../../src/types/job.ts";
 import { normalizeVideoPath } from "../../src/utils/paths.ts";
 
 test("native canonical Windows paths match dialog and saved ROI paths", () => {
@@ -46,4 +46,18 @@ test("imported plot ranges use the CBF band unless explicitly saved", () => {
   const overridden = parseSettingsFile({ ...parameters, pipeline_params: { ...parameters.pipeline_params, RAW_FREQUENCY_MIN_HZ: 0, RAW_FREQUENCY_MAX_HZ: 100 } }, "in_vitro");
   assert.equal(overridden.settings.plotFrequencyMin, 0);
   assert.equal(overridden.settings.plotFrequencyMax, 100);
+});
+
+test("back-and-forth analysis edits invalidate downstream previews but preserve the FFT", () => {
+  const draft = structuredClone(defaultDraft);
+  const fft = previewSignature(draft);
+  const analysis = analysisPreviewSignature(draft.settings);
+  for (const patch of [{ bandLow: 12, bandHigh: 40 }, { minTuftSize: 200 }, { evidenceGaussianSigma: 2 }]) {
+    const changed = { ...draft, settings: { ...draft.settings, ...patch } };
+    assert.equal(previewSignature(changed), fft);
+    assert.notEqual(analysisPreviewSignature(changed.settings), analysis);
+  }
+  const changedRoi = { ...draft, settings: { ...draft.settings, radius: draft.settings.radius - 10 } };
+  assert.notEqual(previewSignature(changedRoi), fft);
+  assert.equal(analysisPreviewSignature(structuredClone(draft.settings)), analysis);
 });

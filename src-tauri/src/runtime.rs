@@ -1,4 +1,12 @@
 use std::path::{Path, PathBuf};
+use tauri::{AppHandle, Manager};
+
+pub(crate) fn preview_cache_directory(app: &AppHandle) -> Result<PathBuf, String> {
+    app.path()
+        .app_cache_dir()
+        .map(|directory| directory.join("analysis-previews"))
+        .map_err(|error| format!("Could not resolve preview cache directory: {error}"))
+}
 
 #[derive(Clone, Debug)]
 pub(crate) struct SidecarLaunch {

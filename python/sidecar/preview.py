@@ -2,6 +2,7 @@
 
 import argparse
 import base64
+from dataclasses import fields
 from io import BytesIO
 import json
 from itertools import islice
@@ -18,6 +19,15 @@ if __name__ == "__main__" and len(sys.argv) > 1 and sys.argv[1] in {"first-frame
 import imageio.v2 as imageio
 import numpy as np
 from PIL import Image
+
+from cilia_sidecar.preview_cache import close_preview, load_preview, save_preview, source_stamp
+from cilia_sidecar.ex_vivo_pipeline import (
+    ExVivoPipelineParams,
+    build_ex_vivo_params,
+    compute_ex_vivo_fft_features,
+    ex_vivo_summary,
+    joint_power_spectrum,
+)
 
 from cilia_sidecar.final_pipeline import (
     FinalPipelineParams,
@@ -37,6 +47,7 @@ from cilia_sidecar.final_pipeline import (
     masked_gaussian,
     otsu_threshold,
     remove_small_labels_from_mask,
+    restored_tuft_metrics,
     hsv_to_rgb,
 )
 
@@ -103,7 +114,6 @@ def fft_preview(
     if band_low < 0 or band_high <= band_low or band_high > fps / 2.0:
         raise ValueError(f"CBF band must satisfy 0 <= low < high <= {fps / 2.0:g} Hz")
 
-    video = _load_gray_frames_bounded(video_path, frame_count)
     final_params = _final_params_from_preview(
         fps=fps,
         frame_count=frame_count,
@@ -122,13 +132,57 @@ def fft_preview(
         use_autocorrelation_fallback=use_autocorrelation_fallback,
         pipeline_params=pipeline_params or {},
     )
-    features = compute_fft_features(video, final_params)
+    options = pipeline_params or {}
+    mode = options.get("PREVIEW_ANALYSIS_MODE", "in_vitro")
+    cache_params = _ex_vivo_params_from_preview(video_path, final_params, options) if mode == "ex_vivo" else final_params
+    cached = load_preview(video_path, cache_params, mode)
+    try:
+        return _fft_preview_payload(video_path, final_params, cache_params, options, cached, neighbor_radius)
+    finally:
+        close_preview(cached)
+
+
+def _ex_vivo_params_from_preview(video_path: Path, params: FinalPipelineParams, options: dict[str, Any]) -> ExVivoPipelineParams:
+    values = {field.name: getattr(params, field.name) for field in fields(ExVivoPipelineParams) if hasattr(params, field.name)}
+    values["ROI_POLYGONS"] = {str(video_path): params.ROI_POLYGONS or []}
+    values["EX_VIVO_DESPECKLE_MIN_AREA"] = options.get("EX_VIVO_DESPECKLE_MIN_AREA", 150)
+    return build_ex_vivo_params(values)
+
+
+def _fft_preview_payload(
+    video_path: Path,
+    final_params: FinalPipelineParams,
+    cache_params: FinalPipelineParams | ExVivoPipelineParams,
+    pipeline_params: dict[str, Any],
+    cached: dict[str, Any] | None,
+    neighbor_radius: int,
+) -> dict[str, Any]:
+    fps, frame_count = final_params.FPS, final_params.N_FRAMES
+    roi_mode, radius, square_width = final_params.ROI_MODE, final_params.RADIUS, final_params.SQUARE_WIDTH
+    band_low, band_high = final_params.BAND_LO, final_params.BAND_HI
+    snr_threshold_db, use_hann = final_params.SNR_THRESH_DB, final_params.USE_HANN
+    remove_doubling = final_params.REMOVE_DOUBLING
+    half_power_ratio_threshold = final_params.HALF_POWER_RATIO_THRESH
+    use_spatial_consensus = final_params.USE_SPATIAL_CONSENSUS
+    spatial_tolerance_fraction = final_params.SPATIAL_TOL_FRAC
+    use_autocorrelation_fallback = final_params.USE_AUTOCORR_FALLBACK
+    is_ex_vivo_preview = pipeline_params.get("PREVIEW_ANALYSIS_MODE") == "ex_vivo"
+    mode = "ex_vivo" if is_ex_vivo_preview else "in_vitro"
+    original_source = source_stamp(video_path)
+    video = cached["frames"] if cached else _load_gray_frames_bounded(video_path, frame_count)
+    features = cached["features"] if cached else (
+        compute_ex_vivo_fft_features(video_path, video, cache_params)
+        if is_ex_vivo_preview else compute_fft_features(video, final_params)
+    )
+    state = cached["analysis"] if cached else None
     decoded_frames, height, width = video.shape
     roi = features["roi"].astype(bool)
+    if is_ex_vivo_preview and not np.all(roi) and "preview_mean_power_spectrum" not in features:
+        _, power = joint_power_spectrum(video, roi, cache_params)
+        features["preview_mean_power_spectrum"] = power / max(1, int(np.sum(roi)))
     dominant_map = features["dominant_global_corrected"]
     snr_map = features["global_snr_db"]
-    is_ex_vivo_preview = (pipeline_params or {}).get("PREVIEW_ANALYSIS_MODE") == "ex_vivo"
-    stages = (
+    stages = state["stages"] if state else (
         _ex_vivo_preview_stages(features, final_params, pipeline_params or {})
         if is_ex_vivo_preview
         else build_foreground_stages(features, final_params)
@@ -140,15 +194,31 @@ def fft_preview(
     tuft_labels = np.zeros((height, width), dtype=np.int32)
     tuft_phase_map = np.full((height, width), np.nan, dtype=np.float32)
     tuft_rows: list[dict[str, Any]] = []
-    include_tufts = bool((pipeline_params or {}).get("PREVIEW_TUFTS", False))
+    include_tufts = not is_ex_vivo_preview and bool((pipeline_params or {}).get("PREVIEW_TUFTS", False))
     include_phase = bool((pipeline_params or {}).get("PREVIEW_PHASE", False))
     if include_tufts:
-        cluster_labels = build_repaired_clusters(cleanup_mask, dominant_map, final_params)
-        tuft_labels = build_tuft_labels(cluster_labels, final_params)
-    if include_phase and np.any(tuft_labels > 0):
-        tuft_rows, tuft_phase_map = compute_tuft_metrics(video_path, video, features, tuft_labels, final_params)
+        if state and state.get("tufts_ready", False):
+            cluster_labels, tuft_labels = state["cluster_labels"], state["tuft_labels"]
+        else:
+            cluster_labels = build_repaired_clusters(cleanup_mask, dominant_map, final_params)
+            tuft_labels = build_tuft_labels(cluster_labels, final_params)
+    if include_phase:
+        if state and state.get("metrics_ready", False):
+            tuft_rows, tuft_phase_map = restored_tuft_metrics(state, tuft_labels, final_params)
+        elif np.any(tuft_labels > 0):
+            tuft_rows, tuft_phase_map = compute_tuft_metrics(video_path, video, features, tuft_labels, final_params)
+    checkpoint = dict(state or {})
+    checkpoint["stages"] = stages
+    if include_tufts:
+        checkpoint.update(tufts_ready=True, cluster_labels=cluster_labels, tuft_labels=tuft_labels)
+    if include_phase and include_tufts:
+        checkpoint.update(metrics_ready=True, tensor_ready=bool(final_params.COMPUTE_METACHRONAL_AXIS), tuft_rows=tuft_rows, tuft_phase_map=tuft_phase_map)
+    if is_ex_vivo_preview and pipeline_params.get("PREVIEW_FILTER") and not checkpoint.get("summary_ready", False):
+        summary, summary_phase = ex_vivo_summary(video_path, "preview", video, features, cleanup_mask, cache_params)
+        checkpoint.update(summary_ready=True, summary=summary, summary_phase_map=summary_phase)
+    save_preview(video_path, cache_params, mode, video, features, checkpoint, expected_source=original_source)
     frequencies = np.concatenate(([0.0], features["frequencies_non_dc"].astype(np.float64)))
-    mean_power_non_dc = features["mean_power_spectrum"].astype(np.float64)
+    mean_power_non_dc = features.get("preview_mean_power_spectrum", features["mean_power_spectrum"]).astype(np.float64)
     mean_power = np.concatenate(([0.0], mean_power_non_dc))
     normalization = float(np.max(mean_power[1:])) if mean_power.size > 1 else float(np.max(mean_power))
     if normalization > 0:

@@ -1,4 +1,6 @@
-use crate::runtime::{media_preview_sidecar_launch, preview_sidecar_launch, SidecarLaunch};
+use crate::runtime::{
+    media_preview_sidecar_launch, preview_cache_directory, preview_sidecar_launch, SidecarLaunch,
+};
 use serde::Deserialize;
 use serde_json::Value;
 use std::{
@@ -7,7 +9,7 @@ use std::{
     process::Stdio,
     sync::Mutex,
 };
-use tauri::State;
+use tauri::{AppHandle, State};
 use tokio::{io::AsyncReadExt, process::Command, sync::oneshot};
 
 const VIDEO_EXTENSIONS: &[&str] = &["avi", "mp4", "mov", "m4v", "mkv", "wmv", "mpg", "mpeg"];
@@ -69,11 +71,13 @@ pub async fn generate_video_loop_preview(video_path: String) -> Result<Value, St
 
 #[tauri::command]
 pub async fn generate_fft_preview(
+    app: AppHandle,
     previews: State<'_, ManagedPreviews>,
     request: FftPreviewRequest,
 ) -> Result<Value, String> {
     validate_preview_id(&request.preview_id)?;
     let video = validate_video_path(&request.video_path)?;
+    let cache_directory = preview_cache_directory(&app)?;
     if !(1..=100).contains(&request.frame_count) {
         return Err("FFT preview frame count must be between 1 and 100.".to_string());
     }
@@ -158,7 +162,7 @@ pub async fn generate_fft_preview(
         .lock()
         .map_err(|_| "Preview state is unavailable.".to_string())?
         .insert(request.preview_id.clone(), cancel_sender);
-    let result = run_cancellable_preview(args, cancel_receiver).await;
+    let result = run_cancellable_preview(args, cancel_receiver, cache_directory).await;
     previews
         .0
         .lock()
@@ -214,6 +218,7 @@ where
 async fn run_cancellable_preview<I>(
     args: I,
     mut cancel: oneshot::Receiver<()>,
+    cache_directory: PathBuf,
 ) -> Result<Value, String>
 where
     I: IntoIterator<Item = String>,
@@ -225,6 +230,7 @@ where
     }
     configure_child_command(&mut command);
     let mut child = command
+        .env("TUFFT_PREVIEW_CACHE_DIR", cache_directory)
         .args(args)
         .stdin(Stdio::null())
         .stdout(Stdio::piped())

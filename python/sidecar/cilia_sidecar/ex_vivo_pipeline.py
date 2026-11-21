@@ -9,6 +9,8 @@ import numpy as np
 from PIL import Image, ImageDraw
 from scipy import fft
 
+from .preview_cache import close_preview, load_preview
+
 from .final_pipeline import (
     FinalPipelineParams,
     append_csv_rows,
@@ -121,6 +123,16 @@ def process_one_ex_vivo_video(
     tag = output_tag or _safe_tag(video_path)
     video_dir = output_root / tag
     video_dir.mkdir(parents=True, exist_ok=True)
+    cached = load_preview(video_path, params, "ex_vivo")
+    if cached is not None:
+        try:
+            _stage(progress_callback, "load_video", "Loading saved preview results")
+            return _process_loaded_ex_vivo_video(
+                video_path, video_dir, tag, cached["frames"], params,
+                progress_callback, summary_output_columns, cached,
+            )
+        finally:
+            close_preview(cached)
     selection = normalize_frame_count_selection(params.N_FRAMES)
     frame_description = "all video frames" if selection is None else f"up to {selection} video frames"
     _stage(progress_callback, "load_video", f"Decoding {frame_description} to temporary disk storage")
@@ -144,22 +156,24 @@ def _process_loaded_ex_vivo_video(
     params: ExVivoPipelineParams,
     progress_callback: ProgressCallback | None,
     summary_output_columns: list[str] | None,
+    cached: dict[str, Any] | None = None,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     roi = roi_mask_for_video(video_path, frames.shape[1:], params)
     save_roi_records(video_dir, tag, roi, params, video_path)
 
-    final_params = final_params_from_ex_vivo(params)
-    _stage(progress_callback, "fft", "Running per-pixel FFT and frequency correction")
-    features = compute_fft_features(frames, final_params)
-    features["roi"] = roi
-    for name in ("dominant_global_corrected", "raw_phase_at_dominant", "global_snr_db"):
-        if name in features:
-            features[name] = np.where(roi, features[name], np.nan)
+    state = cached["analysis"] if cached else None
+    _stage(progress_callback, "fft", "Reusing preview FFT and frequency correction" if cached else "Running per-pixel FFT and frequency correction")
+    features = cached["features"] if cached else compute_ex_vivo_fft_features(video_path, frames, params)
 
     _stage(progress_callback, "foreground", "Building Gaussian evidence foreground and bandpass mask")
-    foreground = ex_vivo_foreground_mask(features, params)
-    _stage(progress_callback, "summary", "Computing ROI-level CBF summary")
-    summary, phase_map = ex_vivo_summary(video_path, tag, frames, features, foreground, params)
+    foreground = state["stages"]["post_flat_despeckle"] if state else ex_vivo_foreground_mask(features, params)
+    reuse_summary = state is not None and state.get("summary_ready", False)
+    _stage(progress_callback, "summary", "Reusing preview ROI-level CBF summary" if reuse_summary else "Computing ROI-level CBF summary")
+    if reuse_summary:
+        summary, phase_map = dict(state["summary"]), state["summary_phase_map"]
+        summary.update(video_file=str(video_path), tag=tag)
+    else:
+        summary, phase_map = ex_vivo_summary(video_path, tag, frames, features, foreground, params)
     summary["frames_processed"] = int(frames.shape[0])
     if params.SAVE_BATCH_SUMMARY:
         write_csv(
@@ -170,6 +184,15 @@ def _process_loaded_ex_vivo_video(
     _stage(progress_callback, "plots", "Rendering selected ex-vivo plots")
     make_ex_vivo_plots(video_dir, tag, frames, features, foreground, phase_map, params)
     return summary, []
+
+
+def compute_ex_vivo_fft_features(video_path: Path, frames: np.ndarray, params: ExVivoPipelineParams) -> dict[str, np.ndarray]:
+    features = compute_fft_features(frames, final_params_from_ex_vivo(params))
+    roi = roi_mask_for_video(video_path, frames.shape[1:], params)
+    features["roi"] = roi
+    for name in ("dominant_global_corrected", "raw_phase_at_dominant", "global_snr_db"):
+        features[name] = np.where(roi, features[name], np.nan)
+    return features
 
 
 def final_params_from_ex_vivo(params: ExVivoPipelineParams) -> FinalPipelineParams:

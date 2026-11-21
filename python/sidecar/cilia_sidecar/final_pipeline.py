@@ -15,6 +15,8 @@ from scipy import fft, ndimage
 from skimage.feature import peak_local_max
 from skimage.segmentation import watershed
 
+from .preview_cache import close_preview, load_preview
+
 
 STRUCTURE_4 = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]], dtype=bool)
 STRUCTURE_8 = np.ones((3, 3), dtype=bool)
@@ -181,6 +183,16 @@ def process_one_video(
     tag = output_tag or _safe_tag(video_path)
     video_dir = output_root / tag
     video_dir.mkdir(parents=True, exist_ok=True)
+    cached = load_preview(video_path, params, "in_vitro")
+    if cached is not None:
+        try:
+            _stage(progress_callback, "load_video", "Loading saved preview results")
+            return _process_loaded_video(
+                video_path, video_dir, tag, cached["frames"], params,
+                progress_callback, summary_output_columns, tuft_output_columns, cached,
+            )
+        finally:
+            close_preview(cached)
     selection = normalize_frame_count_selection(params.N_FRAMES)
     frame_description = "all video frames" if selection is None else f"up to {selection} video frames"
     _stage(progress_callback, "load_video", f"Decoding {frame_description} to temporary disk storage")
@@ -206,21 +218,31 @@ def _process_loaded_video(
     progress_callback: ProgressCallback | None,
     summary_output_columns: list[str] | None,
     tuft_output_columns: list[str] | None,
+    cached: dict[str, Any] | None = None,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
-    _stage(progress_callback, "fft", "Running per-pixel FFT and frequency correction")
-    features = compute_fft_features(frames, params)
-    _stage(progress_callback, "foreground", "Building Gaussian evidence foreground")
-    stages = build_foreground_stages(features, params)
-    _stage(progress_callback, "tuft_segmentation", "Building repaired frequency clusters and watershed tufts")
-    cluster_labels = build_repaired_clusters(stages["post_flat_despeckle"], features["dominant_global_corrected"], params)
-    tuft_labels = build_tuft_labels(cluster_labels, params)
+    state = cached["analysis"] if cached else None
+    _stage(progress_callback, "fft", "Reusing preview FFT and frequency correction" if cached else "Running per-pixel FFT and frequency correction")
+    features = cached["features"] if cached else compute_fft_features(frames, params)
+    _stage(progress_callback, "foreground", "Reusing preview foreground filtering" if state else "Building Gaussian evidence foreground")
+    stages = state["stages"] if state else build_foreground_stages(features, params)
+    reuse_tufts = state is not None and state.get("tufts_ready", False)
+    _stage(progress_callback, "tuft_segmentation", "Reusing preview tuft segmentation" if reuse_tufts else "Building repaired frequency clusters and watershed tufts")
+    if reuse_tufts:
+        tuft_labels = state["tuft_labels"]
+    else:
+        cluster_labels = build_repaired_clusters(stages["post_flat_despeckle"], features["dominant_global_corrected"], params)
+        tuft_labels = build_tuft_labels(cluster_labels, params)
 
     rows: list[dict[str, Any]] = []
     phase_map = np.full(tuft_labels.shape, np.nan, dtype=np.float32)
     raw_phase = features["raw_phase_at_dominant"]
     if params.COMPUTE_TUFT_STATS or params.COMPUTE_METACHRONAL_AXIS:
-        _stage(progress_callback, "tuft_metrics", "Computing per-tuft CBF and phase tensor metrics")
-        rows, phase_map = compute_tuft_metrics(video_path, frames, features, tuft_labels, params)
+        reuse_metrics = state is not None and state.get("metrics_ready", False)
+        _stage(progress_callback, "tuft_metrics", "Reusing preview CBF and phase tensor metrics" if reuse_metrics else "Computing per-tuft CBF and phase tensor metrics")
+        if reuse_metrics:
+            rows, phase_map = restored_tuft_metrics(state, tuft_labels, params)
+        else:
+            rows, phase_map = compute_tuft_metrics(video_path, frames, features, tuft_labels, params)
     summary = video_summary(video_path, tag, rows, params)
     summary["video_file"] = str(video_path)
     summary["tag"] = tag
@@ -243,6 +265,18 @@ def _process_loaded_video(
     _stage(progress_callback, "plots", "Rendering selected diagnostic plots")
     make_plots(video_dir, video_path, features, stages, tuft_labels, rows, phase_map, raw_phase, params)
     return summary, rows
+
+
+def restored_tuft_metrics(state: dict[str, Any], labels: np.ndarray, params: FinalPipelineParams) -> tuple[list[dict[str, Any]], np.ndarray]:
+    rows = [dict(row) for row in state["tuft_rows"]]
+    phase_map = state["tuft_phase_map"]
+    if params.COMPUTE_METACHRONAL_AXIS:
+        if not state.get("tensor_ready", False):
+            add_tensor_metrics(rows, labels, phase_map, params)
+    else:
+        for row in rows:
+            row.update(phase_tensor_axis_deg=float("nan"), phase_tensor_coherence=float("nan"))
+    return rows, phase_map
 
 
 def normalize_frame_count_selection(value: int | str) -> int | None:

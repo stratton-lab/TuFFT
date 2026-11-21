@@ -2,8 +2,10 @@ $ErrorActionPreference = "Stop"
 
 $ProjectRoot = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
 $Tests = @(
+    "tests.python.test_cli_workers",
     "tests.python.test_ex_vivo_pipeline",
     "tests.python.test_preview",
+    "tests.python.test_preview_cache",
     "tests.python.test_media_preview",
     "tests.python.test_sidecar_config",
     "tests.python.test_sidecar_events",
