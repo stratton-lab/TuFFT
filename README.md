@@ -32,7 +32,7 @@ The guided Windows desktop application and Python CLI share the same analysis en
 | Python CLI | [CLI installation](docs/INSTALLATION.md#python-cli-only), then the [CLI tutorial](docs/CLI_TUTORIAL.md). |
 | Developer setup | [Desktop source installation](docs/INSTALLATION.md#desktop-from-source-windows). |
 
-The installer includes Python, scientific dependencies, and FFmpeg; no development tools are required. Download the **setup .exe** under release Assets, not GitHub's source-code ZIP. While this repository is private, downloads and cloning require an invited GitHub account; a link alone does not grant access.
+The installer includes Python, scientific dependencies, and FFmpeg; no development tools are required. Download the **setup .exe** under release Assets, not GitHub's source-code ZIP. No GitHub account is required to download or clone this public repository.
 
 Windows 10/11 x64 is supported. macOS desktop packaging and validation are in progress; no supported macOS installer is available yet.
 

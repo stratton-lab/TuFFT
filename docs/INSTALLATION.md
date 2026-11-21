@@ -6,11 +6,10 @@ Choose the Windows installer for routine desktop use, Python-only installation f
 
 Requires Windows 10/11 x64, a writable output folder, and sufficient free disk space for decoded video data.
 
-1. Sign in to GitHub with an account granted access to this private repository.
-2. Open [TuFFT Releases](https://github.com/stratton-lab/TuFFT/releases/latest).
-3. Under **Assets**, download `TuFFT_0.1.2_x64-setup.exe`, not **Source code**.
-4. Run the installer and launch **TuFFT** from the Start menu.
-5. Follow the [desktop tutorial](USER_MANUAL.md).
+1. Open [TuFFT Releases](https://github.com/stratton-lab/TuFFT/releases/latest). No GitHub account is required.
+2. Under **Assets**, download `TuFFT_0.1.2_x64-setup.exe`, not **Source code**.
+3. Run the installer and launch **TuFFT** from the Start menu.
+4. Follow the [desktop tutorial](USER_MANUAL.md).
 
 No Python, Conda, Node.js, Rust, or separate FFmpeg installation is required. Share the setup `.exe`, not the installed application executable alone: supporting files are required. The installer can also be transferred by USB.
 
@@ -37,7 +36,7 @@ py -3.12 -m venv .venv
 
 Explicit environment paths avoid PowerShell activation scripts and execution-policy changes. Pip installs NumPy, SciPy, scikit-image, imageio, imageio-ffmpeg, and Pillow. FFmpeg comes through imageio-ffmpeg. Internet is needed for installation, not normal analysis.
 
-Private-repository cloning requires an invited account. Complete Git Credential Manager's browser sign-in; GitHub passwords are not used as Git HTTPS passwords. Ask the maintainer for access if cloning reports **Repository not found**.
+Cloning this public repository does not require a GitHub account.
 
 Continue with the [CLI tutorial](CLI_TUTORIAL.md), including editable in-vitro and ex-vivo examples.
 
